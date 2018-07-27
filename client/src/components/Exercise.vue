@@ -11,12 +11,17 @@
       <input type="text" v-model="exercise.name" @change="updateExercise(exercise)" class="form-control" />
     </p>
 
-    <!-- errors -->
-    <ul>
-      <li v-for="error in errors" :key="error.id">
-        {{ error.message }}
-      </li>
-    </ul>
+    <section class="alerts container">
+      <!-- flash -->
+      <p v-for="flash in flashes" class="alert alert-success">
+        {{ flash }}
+      </p>
+
+      <!-- errors -->
+      <p v-for="error in errors" :key="error.id" class="alert alert-danger">
+        {{ error }}
+      </p>
+    </section>
   </div>
 </template>
 
@@ -29,7 +34,8 @@ export default {
       exerciseID: '',
       exerciseName: '',
       exercises: [],
-      errors: []
+      errors: [],
+      flashes: []
     }
   },
 
@@ -45,15 +51,23 @@ export default {
   },
 
   methods: {
+    sendFlash(message, data) {
+      data.push(message)
+      setTimeout(() => {
+        data.pop()
+      }, 3000)
+    },
+
     // Pushes exercise to the server when called.
     postExercise() {
       axios.post('http://localhost:3000/exercises', {'name': this.exerciseName})
       .then(response => {
         this.exercises = response.data
         this.exerciseName = '' // clear input
+        this.sendFlash("Success", this.flashes)
       })
       .catch(e => {
-        this.errors.push(e)
+        this.sendFlash(e, this.errors)
       })
     },
 
@@ -63,9 +77,10 @@ export default {
       axios.delete('http://localhost:3000/exercises/' + exercise._id)
       .then(response => {
         this.$delete(this.exercises, index)
+        this.sendFlash("Success", this.flashes)
       })
       .catch(e => {
-        this.errors.push(e)
+        this.sendError(e, this.errors)
       })
     },
 
@@ -73,14 +88,21 @@ export default {
     updateExercise(exercise) {
       axios.put('http://localhost:3000/exercises/' + exercise._id, {'name': exercise.name})
       .then(response => {
-        console.log(response)
+        this.sendFlash("Successfully updated", this.flashes)
       })
       .catch(e => {
-        this.errors.push(e)
+        this.sendFlash("Failed to update", this.errors)
       })
     }
   }
 }
+
 </script>
 <style scoped>
+.alerts {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
 </style>
