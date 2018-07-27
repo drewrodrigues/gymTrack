@@ -8,7 +8,7 @@
     <!-- list each exercise -->
     <p v-for="(exercise, index) in exercises" :key="exercise.id">
       <button v-on:click="deleteExercise(exercise, index)" class="btn btn-danger btn-sm">X</button>
-      {{ exercise.name }}
+      <input type="text" v-model="exercise.name" @change="updateExercise(exercise)" class="form-control" />
     </p>
 
     <!-- errors -->
@@ -63,6 +63,17 @@ export default {
       axios.delete('http://localhost:3000/exercises/' + exercise._id)
       .then(response => {
         this.$delete(this.exercises, index)
+      })
+      .catch(e => {
+        this.errors.push(e)
+      })
+    },
+
+    // Triggered when edited in place
+    updateExercise(exercise) {
+      axios.put('http://localhost:3000/exercises/' + exercise._id, {'name': exercise.name})
+      .then(response => {
+        console.log(response)
       })
       .catch(e => {
         this.errors.push(e)
