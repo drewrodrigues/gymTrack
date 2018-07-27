@@ -1,11 +1,13 @@
 <template>
   <div>
     <!-- add an exercise -->
-    <input type="text" v-model="exerciseName" @keyup.enter="postExercise()" />
+    <div class="form-group">
+      <input type="text" v-model="exerciseName" @keyup.enter="postExercise()" class='form-control'/>
+    </div>
 
     <!-- list each exercise -->
     <p v-for="(exercise, index) in exercises" :key="exercise.id">
-      <button v-on:click="deleteExercise(exercise, index)">X</button>
+      <button v-on:click="deleteExercise(exercise, index)" class="btn btn-danger btn-sm">X</button>
       {{ exercise.name }}
     </p>
 
