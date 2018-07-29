@@ -1,81 +1,81 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const morgan = require('morgan');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const app = express();
+const express = require('express')
+const mongoose = require('mongoose')
+const morgan = require('morgan')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const app = express()
 
 // config *********************************************************************
-app.use(morgan('tiny'));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(cors());
+app.use(morgan('tiny'))
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json())
+app.use(cors())
 
 // database *******************************************************************
-mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true });
+mongoose.connect('mongodb://localhost:27017/test', { useNewUrlParser: true })
 
 // server *********************************************************************
 app.listen(3000, function() {
-  console.log('Port 3000: open for business');
+  console.log('Port 3000: open for business')
 })
 
 // schema *********************************************************************
-var Schema = mongoose.Schema;
+var Schema = mongoose.Schema
 
 function required(v) {
-  return v.length > 0;
+  return v.length > 0
 }
 
 var exerciseSchema = new Schema({
   name: { type: String, validate: [required, 'Exercise name required'] },
   sets: [{ type: Schema.Types.ObjectId, ref: 'Set' }]
-});
+})
 
 exerciseSchema.path('name').validate(function(value) {
-  return value != null;
-}, 'Exercise name required');
+  return value != null
+}, 'Exercise name required')
 
 var setSchema = new Schema({
-  weight: { type: Number, validate: [required, 'Weight required'] },
-  reps: { type: Number, validate: [required, 'Reps required'] },
-  exercise: { 
-    type: Schema.Types.ObjectId, ref: 'Exercise', 
-    validate: [required, 'Exercise required']
-  }
-});
+  weight: { type: Number },
+  reps: { type: Number }
+  // exercise: { 
+  //   type: Schema.Types.ObjectId, ref: 'Exercise', 
+  //   validate: [required, 'Exercise required']
+  // }
+})
 
 // models *********************************************************************
-var Exercise = mongoose.model('Exercise', exerciseSchema);
-var Set = mongoose.model('Set', setSchema);
+var Exercise = mongoose.model('Exercise', exerciseSchema)
+var Set = mongoose.model('Set', setSchema)
 
 // routes *********************************************************************
-// - exercises
+// - exercises ****************************************************************
 app.get('/exercises', (req, res) => {
   Exercise.find({}, function(err, exercises) {
     if (err) {
-      res.send(400, "Something went wrong");
+      res.send(400, "Something went wrong")
     }
-    res.send(exercises);
+    res.send(exercises)
   })
 })
 
 app.post('/exercises', (req, res) => {
-  const exercise = new Exercise({ name: req.body.name });
+  const exercise = new Exercise({ name: req.body.name })
   exercise.save(function(err, exercise) {
     if (err) {
-      res.send(400, "Something went wrong");
+      res.send(400, "Something went wrong")
     } else {
-      res.redirect('/exercises');
+      res.redirect('/exercises')
     }
-  });
+  })
 })
 
 app.delete('/exercises/:id', (req, res) => {
   Exercise.deleteOne({ _id: req.params.id }, (err) => {
     if (err) {
-      res.send(400, "Something went wrong");
+      res.send(400, "Something went wrong")
     }
-    res.send('Success');
+    res.send('Success')
   })
 })
 
@@ -94,4 +94,40 @@ app.put('/exercises/:id', (req, res) => {
       })
     }
   })
+})
+
+// - sets *********************************************************************
+app.get('/sets', (req, res) => {
+  Set.find({}, (err, sets) => {
+    if (err) {
+      res.send(400, "Something went wrong")
+    } else {
+      res.send(sets)
+    }
+  })
+})
+
+app.post('/sets', (req, res) => {
+  const set = new Set({ weight: req.body.weight, reps: req.body.reps })
+  set.save((err, set) => {
+    console.log(err)
+    if (err) {
+      res.sendStatus(400)
+    } else {
+      res.redirect('/sets')
+    }
+  })
+})
+
+app.delete('/sets/:id', (req, res) => {
+  Set.deleteOne({ _id: req.params.id }, (err) => {
+    if (err) {
+      res.sendStatus(400)
+    } else {
+      res.send('Success')
+    }
+  })
+})
+
+app.put('/sets/:id', (req, res) => {
 })
