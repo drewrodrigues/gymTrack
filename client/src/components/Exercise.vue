@@ -9,7 +9,9 @@
     <p v-for="(exercise, index) in exercises" :key="exercise.id">
       <button v-on:click="deleteExercise(exercise, index)" class="btn btn-danger btn-sm">X</button>
       <input type="text" v-model="exercise.name" @change="updateExercise(exercise)" class="form-control" />
+
     </p>
+    <set></set>
 
     <section class="alerts container">
       <!-- flash -->
@@ -27,6 +29,7 @@
 
 <script>
 import axios from 'axios'
+import Set from './Set.vue'
 
 export default {
   data() {
@@ -37,6 +40,10 @@ export default {
       errors: [],
       flashes: []
     }
+  },
+  
+  components: {
+    Set
   },
 
   // Fetches exercises when the component is created
@@ -80,7 +87,7 @@ export default {
         this.sendFlash("Success", this.flashes)
       })
       .catch(e => {
-        this.sendError(e, this.errors)
+        this.sendFlash(e, this.errors)
       })
     },
 
