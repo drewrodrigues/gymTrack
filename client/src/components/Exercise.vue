@@ -6,16 +6,22 @@
     </div>
 
     <!-- list each exercise -->
-    <p v-for="(exercise, index) in exercises" :key="exercise.id">
-      <button v-on:click="deleteExercise(exercise, index)" class="btn btn-danger btn-sm">X</button>
-      <input type="text" v-model="exercise.name" @change="updateExercise(exercise)" class="form-control" />
-
-    </p>
-    <set></set>
+    <!-- TODO: add Exercise-List.vue -->
+    <div v-for="(exercise, index) in exercises" :key="exercise.id" class="card">
+      <div class="card-header">
+        <input type="text" v-model="exercise.name" @change="updateExercise(exercise)" class="form-control" />
+      </div>
+      <div class="card-body">
+        <set-list :sets=exercise.sets :exerciseId=exercise._id></set-list>
+      </div>
+      <div class="card-footer">
+        <button v-on:click="deleteExercise(exercise, index)" class="btn btn-danger btn-sm">Delete Exercise</button>
+      </div>
+    </div>
 
     <section class="alerts container">
       <!-- flash -->
-      <p v-for="flash in flashes" class="alert alert-success">
+      <p v-for="flash in flashes" class="alert alert-success" :key=flash>
         {{ flash }}
       </p>
 
@@ -29,7 +35,7 @@
 
 <script>
 import axios from 'axios'
-import Set from './Set.vue'
+import SetList from './Set-List.vue'
 
 export default {
   data() {
@@ -43,7 +49,7 @@ export default {
   },
   
   components: {
-    Set
+    SetList
   },
 
   // Fetches exercises when the component is created
@@ -113,3 +119,4 @@ export default {
   right: 0;
 }
 </style>
+
