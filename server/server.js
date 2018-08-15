@@ -31,18 +31,17 @@ var exerciseSchema = new Schema({
   sets: [{ type: Schema.Types.ObjectId, ref: 'Set' }]
 })
 
-exerciseSchema.path('name').validate(function(value) {
-  return value != null
-}, 'Exercise name required')
-
 var setSchema = new Schema({
   weight: { type: Number },
-  reps: { type: Number }
-  // exercise: { 
-  //   type: Schema.Types.ObjectId, ref: 'Exercise', 
-  //   validate: [required, 'Exercise required']
-  // }
+  reps: { type: Number },
+  calculatedOneRepMax: { type: Number },
+  exercise: { type: Schema.Types.ObjectId, ref: 'Exercise' },
 })
+
+setSchema.methods.setCalculatedOneRepMax = function() {
+  // TODO: make sure this runs prior to every save so it's always updated
+  this.calculatedOneRepMax = Math.floor((this.weight / ( 1.0278 - 0.0278 * this.reps )))
+}
 
 // models *********************************************************************
 var Exercise = mongoose.model('Exercise', exerciseSchema)
@@ -51,10 +50,13 @@ var Set = mongoose.model('Set', setSchema)
 // routes *********************************************************************
 // - exercises ****************************************************************
 app.get('/exercises', (req, res) => {
-  Exercise.find({}, function(err, exercises) {
+  Exercise.find({}).
+  populate('sets').
+  exec(function(err, exercises) {
     if (err) {
       res.send(400, "Something went wrong")
     }
+    console.log(exercises)
     res.send(exercises)
   })
 })
@@ -107,14 +109,23 @@ app.get('/sets', (req, res) => {
   })
 })
 
-app.post('/sets', (req, res) => {
-  const set = new Set({ weight: req.body.weight, reps: req.body.reps })
-  set.save((err, set) => {
-    console.log(err)
+app.post('/:exercise_id/sets', (req, res) => {
+  // TODO: save both the set and the exercise, so when exercises are fetched
+  // the set objects are persisted still. When the new 'set' is pushed into
+  // the exercise.sets array, it only pushes the objectID, so the object must persist.
+  // Then make sure the user interface updates when the change happens. 
+  // TODO: don't allow calling for a specific set through a get request, only populate
+  // through the parent 'exercise', which will later be scoped to a date.
+  var exercise = Exercise.findById({ _id: req.params.exercise_id }, (err, exercise) => {
     if (err) {
       res.sendStatus(400)
     } else {
-      res.redirect('/sets')
+      var set = new Set({ weight: req.body.weight, reps: req.body.reps, exercise: req.params.exercise_id })
+      set.setCalculatedOneRepMax()
+      set.save()
+      exercise.sets.push(set)
+      exercise.save()
+      res.send(set)
     }
   })
 })

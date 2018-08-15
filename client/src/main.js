@@ -3,7 +3,7 @@ import App from './App.vue'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import BootstrapVue from 'bootstrap-vue'
- 
+
 Vue.use(VueAxios, axios)
 Vue.use(BootstrapVue)
 
