@@ -1,16 +1,17 @@
-<template>
-  <div id="app" class="container">
-    <Exercise></Exercise>
-  </div>
+<template lang="pug">
+  div
+    NavBar
+    #app.container
+      router-view
 </template>
 
 <script>
-import Exercise from './components/Exercise.vue'
+import NavBar from './components/shared/NavBar.vue'
 
 export default {
   name: 'app',
   components: {
-    Exercise
+    NavBar
   }
 }
 </script>
